@@ -6,44 +6,23 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <style>
-    .container {
-      background: slategrey;
-      width: 50%;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 1%;
-      margin-top: 3%;
-      border: 1px solid;
-    }
-  </style>
 </head>
 
 <body>
-  <div class="container" id="signupUserScreen">
-    <h1>Create a Account</h1>
-    <input type="email" placeholder="Enter your email....." id="email">
-    <input type="password" placeholder="Enter your password....." id="password">
-    <button id="signUp">Create Account</button>
+  <h1>Cloud Firestore</h1>
+  <div class="container">
+    <input type="text" id="name">
+    <button id="addDataBtn">Add Data</button>
   </div>
 
-  <div class="container" id="loginUserScreen">
-    <h1>Login With Email and Password</h1>
-    <input type="email" id="email" placeholder="Enter your email.....">
-    <input type="password" placeholder="Enter your password....." id="password">
-    <button id="signIn">Login</button>
+  <div class="container">
+    <p id="result"></p>
   </div>
 
-  <div class="container" id="userInfoScreen">
-    <div id="userInfo"></div>
-    <button id="logOutBtn">Logout</button>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-analytics.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-firestore.js"></script>
   <script>
+
     var firebaseConfig = {
       apiKey: "AIzaSyBAFI5pwgumF_KKpgZTDabG0Z3eUmBll4o",
       authDomain: "fir-hosting-b4ddb.firebaseapp.com",
@@ -54,75 +33,38 @@
       measurementId: "G-ECLSPSRGL1"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
 
-    //login with email and password
-    document.getElementById('signUp').addEventListener('click', signUpUser);
-    document.getElementById('signIn').addEventListener('click', signInUser);
-    document.getElementById('logOutBtn').addEventListener('click', logOutUser)
+    document.getElementById('addDataBtn').addEventListener('click', addData)
 
-    document.getElementById('signupUserScreen').style.display = 'block';
-    document.getElementById('loginUserScreen').style.display = 'block';
-    document.getElementById('userInfoScreen').style.display = 'none';
+    function addData() {
+      let nameData = document.getElementById('name').value;
+      let dataLoad = {
+        name: nameData
+      }
 
-    function logOutUser() {
-      firebase.auth().signOut().then(() => {
-        document.getElementById('signupUserScreen').style.display = 'block';
-        document.getElementById('loginUserScreen').style.display = 'block';
-        document.getElementById('userInfoScreen').style.display = 'none';
-        console.log("signout user");
-      }).catch(e => {
-        console.log(e);
+      firebase.firestore().collection('edata').add(dataLoad).then(doc => {
+        console.log(doc.id)
+      }).catch(err => console.log(err))
+
+      // firebase.firestore().collection('edata').doc('doc_' + nameData).set(dataLoad).then(doc => {
+      //   console.log('success');
+      // }).catch(error => console.log(error));
+
+    }
+
+    function readData() {
+      firebase.firestore().collection('edata').get().then(docs => {
+        docs.forEach(doc => {
+          console.log(doc.data());
+          console.log(doc.id);
+          document.getElementById('result').innerHTML += "<p>" + doc.data().name + "</p>"
+        });
       })
     }
 
-    function signInUser() {
-      let email = document.getElementById('email').value;
-      let pass = document.getElementById('password').value;
+    readData();
 
-      firebase.auth().signInWithEmailAndPassword(email, password).catch(e => console.log(e));
-    }
-
-    function checkStateUser() {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          document.getElementById('signupUserScreen').style.display = 'none';
-          document.getElementById('loginUserScreen').style.display = 'none';
-          document.getElementById('userInfoScreen').style.display = 'block';
-          console.log(user);
-          if (!user.emailVerified) {
-            sendVerificationMail()
-          }
-
-          userInfo(user);
-        }
-      });
-    }
-    checkStateUser();
-
-    function userInfo(user) {
-      document.getElementById('userInfo').innerHTML = "<p>" + user.email + "</p>"
-    }
-
-    function sendVerificationMail() {
-      let user = firebase.auth().currentUser;
-      user.sendEmailVerification().then(function () {
-        console.log('Email send.');
-      }).catch(function (error) {
-        console.log(error);
-      });
-    }
-
-    function signUpUser() {
-      let email = document.getElementById('email').value;
-      let pass = document.getElementById('password').value;
-
-      firebase.auth().createUserWithEmailAndPassword(email, pass).then(() => {
-        alert("user account created");
-      }).catch(e => console.log(e));
-    }
   </script>
 </body>
 
