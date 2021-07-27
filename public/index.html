@@ -62,7 +62,15 @@
       }).catch(error => console.log(error))
     }
 
-    updateData();
+    // updateData();
+
+    function deleteData() {
+      firebase.firestore().collection('edata').doc('Bue3BqBv0429UH3HCRBD').delete()
+        .then(() => alert('Data remove successfully'))
+        .catch(error => console.log(error))
+    }
+
+    deleteData();
 
     function readData() {
       firebase.firestore().collection('edata').get().then(docs => {
