@@ -53,6 +53,17 @@
 
     }
 
+    function updateData() {
+      let dataUpdate = {
+        name: "New Data Update"
+      }
+      firebase.firestore().collection('edata').doc('bQ8G1DyEfcv3BNRifMmE').update(dataUpdate).then(() => {
+        alert('data uodated successfully');
+      }).catch(error => console.log(error))
+    }
+
+    updateData();
+
     function readData() {
       firebase.firestore().collection('edata').get().then(docs => {
         docs.forEach(doc => {
