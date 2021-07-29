@@ -9,18 +9,15 @@
 </head>
 
 <body>
-  <h1>Cloud Firestore</h1>
-  <div class="container">
-    <input type="text" id="name">
-    <button id="addDataBtn">Add Data</button>
-  </div>
+  <h1>Firebase Upload File</h1>
 
-  <div class="container">
-    <p id="result"></p>
-  </div>
+  <input type="file" onchange="uploadFile()" id="files" multiple />
+
+  <div id="result"></div>
 
   <script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.0/firebase-storage.js"></script>
   <script>
 
     var firebaseConfig = {
@@ -35,55 +32,62 @@
 
     firebase.initializeApp(firebaseConfig);
 
-    document.getElementById('addDataBtn').addEventListener('click', addData)
 
-    function addData() {
-      let nameData = document.getElementById('name').value;
-      let dataLoad = {
-        name: nameData
-      }
+    function uploadFile() {
+      let file = document.getElementById('files').files[0]
 
-      firebase.firestore().collection('edata').add(dataLoad).then(doc => {
-        console.log(doc.id)
+      firebase.storage().ref('images').child(file.name).put(file).then(() => {
+        alert("Image upload successfully");
+        firebase.storage().ref('images').child(file.name).getDownloadURL().then(URL => {
+          console.log(URL);
+          getAllFile();
+        })
       }).catch(err => console.log(err))
-
-      // firebase.firestore().collection('edata').doc('doc_' + nameData).set(dataLoad).then(doc => {
-      //   console.log('success');
-      // }).catch(error => console.log(error));
-
     }
 
-    function updateData() {
-      let dataUpdate = {
-        name: "New Data Update"
-      }
-      firebase.firestore().collection('edata').doc('bQ8G1DyEfcv3BNRifMmE').update(dataUpdate).then(() => {
-        alert('data uodated successfully');
-      }).catch(error => console.log(error))
+
+    function deleteFile(name) {
+      firebase.storage().ref('images').child(name).delete().then(() => {
+        alert("File deleted.")
+      }).catch(err => console.log(err))
     }
 
-    // updateData();
 
-    function deleteData() {
-      firebase.firestore().collection('edata').doc('Bue3BqBv0429UH3HCRBD').delete()
-        .then(() => alert('Data remove successfully'))
-        .catch(error => console.log(error))
-    }
-
-    // deleteData();
-
-    function readData() {
-      firebase.firestore().collection('edata').get().then(docs => {
-        docs.forEach(doc => {
-          console.log(doc.data());
-          console.log(doc.id);
-          document.getElementById('result').innerHTML += "<p>" + doc.data().name + "</p>"
+    function getAllFile() {
+      firebase.storage().ref('images').listAll().then(filesRef => {
+        // console.log(filesRef.items);
+        filesRef.items.forEach(fileRef => {
+          console.log(fileRef);
+          getDownloadURLFromRef(fileRef);
         });
+      }).catch(err => console.log(err))
+    }
+
+    function getDownloadURLFromRef(ref) {
+      document.getElementById('result').innerHTML = ""
+      ref.getDownloadURL().then(URL => {
+        console.log(URL);
+        document.getElementById('result').innerHTML += `
+        <div style="background:gray; width=20%;">
+          <image src="${URL}" width="20%" height="30%"/>
+        </div>
+        `
       })
     }
+    //file delete delete methode 
+    // <button onClick="deleteFileFromRef('${ref}')">Delete</button>
+    // function deleteFileFromRef(ref) {
+    //   console.log(ref);
+    // ref.delete().then(() => {
+    //   alert("Image deleted.");
+    //   getAllFile();
+    // }).catch(err => console.log(err));
+    // }
 
-    readData();
 
+    getAllFile();
+
+    // deleteFile('1703010400316025.png');
   </script>
 </body>
 
